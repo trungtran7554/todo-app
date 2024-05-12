@@ -8,7 +8,7 @@ export const get = async (): Promise<DataTodo[]> => {
 
 export const create = async (data: DataTodo) => {
   const res = await getItemObject("data");
-  const newData = [...res, data];
+  const newData = res ? [...res, data] : [data];
   await setItemObject("data", newData);
 };
 

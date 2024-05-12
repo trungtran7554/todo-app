@@ -80,6 +80,7 @@ const FormScreen: React.FC = () => {
             onChangeText={setDescription}
             placeholder="Enter description"
             multiline
+            textAlignVertical="top"
             numberOfLines={4}
             style={[styleDefault.input]}
           />

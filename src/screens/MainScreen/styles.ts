@@ -33,11 +33,11 @@ export const styleDefault = StyleSheet.create({
   },
   todoList: {
     flex: 1,
-    padding: 15,
   },
   todoBox: {
     padding: 10,
-    marginBottom: 10,
+    marginHorizontal: 15,
+    marginVertical: 10,
     backgroundColor: colors.light,
     borderRadius: 10,
     shadowColor: "#000",

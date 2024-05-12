@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Alert, FlatList, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { styleDefault, styleDark, styleLight } from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -168,7 +168,7 @@ const MainScreen: React.FC = () => {
 
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={data.filter((v: DataTodo) => v.status === tabActive)}
+        data={data?.filter((v: DataTodo) => v.status === tabActive)}
         keyExtractor={item => `TODO_LIST_${item.id}`}
         renderItem={({ item, index }) => renderTodoBox(item, index)}
         style={[styleDefault.todoList]}
