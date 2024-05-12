@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { FlatList, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, FlatList, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { styleDefault, styleDark, styleLight } from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ButtonPrimary } from "../../components/button";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import SelectDropdown from "../../components/select";
+import * as todoServices from "../../services/todo";
 
 export interface DataTodo {
   id: number;
@@ -34,8 +35,29 @@ const MainScreen: React.FC = () => {
   const [tabActive, setTabActive] = useState<string>('TODO');
   const [btnShowIds, setBtnShowIds] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
+  const [data, setData] = useState<DataTodo[]>([]);
 
   const styles = isDarkMode ? styleDark : styleLight;
+
+  const getData = async () => {
+    const res = await todoServices.get();
+    setData(res);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getData();
+    }, [])
+  );
+
+  const updateStatus = async (obj: DataTodo, status: string) => {
+    await todoServices.update({
+      ...obj,
+      status,
+    })
+
+    getData();
+  }
 
   const toggleExpanded = (id: number) => {
     if (expandedIds.includes(id)) {
@@ -53,6 +75,23 @@ const MainScreen: React.FC = () => {
     return btnShowIds.includes(id);
   };
 
+  const onDelete = (id: number) => {
+    Alert.alert(
+      'Confirm deletion',
+      'Are you sure you want to delete?',
+      [
+        { text: 'Cancel', onPress: () => { }, style: 'cancel' },
+        {
+          text: 'Delete', onPress: async () => {
+            await todoServices.deletes(id);
+            getData();
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+  }
+
   const renderTodoBox = (v: DataTodo, i: number) => {
     const onTextLayout = (e: any) => {
       e.nativeEvent.lines.length > 4 && setBtnShowIds([...btnShowIds, v.id]);
@@ -68,12 +107,18 @@ const MainScreen: React.FC = () => {
           >
             {v.name}
           </Text>
-          <View style={[styleDefault.btnEdit]}>
-            <ButtonPrimary title="Edit" />
+          <View style={[styleDefault.boxBtnAction]}>
+            <ButtonPrimary title="Edit" onPress={() => navigation.navigate('Form', v)} />
+            <ButtonPrimary
+              title="Delete"
+              onPress={() => onDelete(v.id)}
+              btnStyle={styleDefault.btnDelete}
+              titleStyle={styleDefault.txtDelete}
+            />
           </View>
         </View>
         <SelectDropdown
-          onChange={() => { }}
+          onChange={(value) => updateStatus(v, value)}
           value={v.status}
           option={status}
         />
@@ -104,7 +149,7 @@ const MainScreen: React.FC = () => {
       <View style={[styleDefault.boxHead]}>
         <View style={[styleDefault.head]}>
           <Text style={[styleDefault.title, styles.title]}>Todo List</Text>
-          <ButtonPrimary title="Add+" />
+          <ButtonPrimary title="Add+" onPress={() => navigation.navigate('Form')} />
         </View>
         <View style={[styleDefault.boxBtnTab]}>
           {status.map((v, i) => (
@@ -123,14 +168,7 @@ const MainScreen: React.FC = () => {
 
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={[
-          {
-            id: 1,
-            name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            status: 'TODO'
-          },
-        ]}
+        data={data.filter((v: DataTodo) => v.status === tabActive)}
         keyExtractor={item => `TODO_LIST_${item.id}`}
         renderItem={({ item, index }) => renderTodoBox(item, index)}
         style={[styleDefault.todoList]}

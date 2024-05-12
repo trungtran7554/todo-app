@@ -58,8 +58,16 @@ export const styleDefault = StyleSheet.create({
     fontWeight: "bold",
     width: Dimensions.get("window").width - 200,
   },
-  btnEdit: {
-    flexDirection: "column",
+  boxBtnAction: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  btnDelete: {
+    backgroundColor: "red",
+    marginLeft: 10,
+  },
+  txtDelete: {
+    color: colors.white,
   },
   descriptionTodo: {
     fontSize: 16,
